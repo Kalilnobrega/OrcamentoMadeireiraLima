@@ -212,8 +212,10 @@ td input, td select {
 }
 
 #texto-resultado {
-  font-family: "Courier New", monospace;
+  font-family: inherit;
   white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
 }
 
 @media (max-width: 480px) {
@@ -221,5 +223,9 @@ td input, td select {
     position: static;
     display: inline-block;
     margin-top: 8px;
+  }
+
+  #texto-resultado {
+    font-size: 0.8rem;
   }
 }
