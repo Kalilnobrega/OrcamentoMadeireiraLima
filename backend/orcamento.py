@@ -86,7 +86,7 @@ def _montar_texto_whatsapp(cliente, itens, subtotal_geral, desconto_aplicado, de
     linhas.append("*Itens:*")
 
     for i, item in enumerate(itens, start=1):
-        acabamento = "aparelhada" if item.aparelhado else "bruta"
+        acabamento = "aparelhada" if item.aparelhado else "normal"
         bitola = f"{_formatar_numero(item.largura_cm, 0)}x{_formatar_numero(item.espessura_cm, 0)}"
         linhas.append(
             f"{i}. {item.madeira_nome} {bitola} ({acabamento}) - {_formatar_numero(item.quantidade, 0)} peça(s) "
@@ -96,6 +96,7 @@ def _montar_texto_whatsapp(cliente, itens, subtotal_geral, desconto_aplicado, de
             f"   {_formatar_numero(item.metros_totais)} m x {_formatar_moeda(item.preco_metro)}/m = "
             f"{_formatar_moeda(item.subtotal)}"
         )
+        linhas.append("")
 
     linhas.append("")
     linhas.append(f"Subtotal: {_formatar_moeda(subtotal_geral)}")
