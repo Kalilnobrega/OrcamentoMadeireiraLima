@@ -82,15 +82,15 @@ def _montar_texto_whatsapp(cliente, itens, subtotal_geral, desconto_aplicado, de
             f"{_formatar_numero(item.medidas_m, 2)}m"
         )
         linhas.append(
-            f"   {_formatar_numero(item.metros_totais)} m x {_formatar_moeda(item.valor_metro)}/m = "
-            f"{_formatar_moeda(item.subtotal)}"
+            f"= {_formatar_moeda(item.subtotal)}"
         )
+        linhas.append("")
 
     linhas.append("")
     linhas.append(f"Subtotal: {_formatar_moeda(subtotal_geral)}")
     if desconto_aplicado > 0:
         linhas.append(
-            f"Desconto: {_formatar_moeda(desconto_aplicado)} ({_formatar_numero(desconto_percentual, 1)}%)"
+            f"Desconto: ({_formatar_numero(desconto_percentual, 1)}%) {_formatar_moeda(desconto_aplicado)}"
         )
     linhas.append(f"*Total: {_formatar_moeda(total_final)}*")
 
