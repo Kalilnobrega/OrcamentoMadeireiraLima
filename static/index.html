@@ -10,7 +10,6 @@
   <header>
     <h1>Madeireira Lima</h1>
     <p class="subtitulo">Gerador de Orçamentos</p>
-    <a class="link-admin" href="/admin">Cadastrar→</a>
   </header>
 
   <main>
@@ -28,10 +27,10 @@
         <table id="tabela-itens">
           <thead>
             <tr>
-              <th>Qtd (peças)</th>
-              <th>Peça</th>
+              <th>Qtd</th>
+              <th>Descrição</th>
               <th>Comprimento (m)</th>
-              <th>Aparelhado</th>
+              <th>Valor do metro (R$)</th>
               <th></th>
             </tr>
           </thead>
@@ -77,11 +76,9 @@
   <template id="template-linha-item">
     <tr>
       <td><input type="number" class="input-qtd" min="1" step="1" value="1" /></td>
-      <td>
-        <select class="input-madeira"></select>
-      </td>
-      <td><input type="number" class="input-comprimento" min="0" step="0.01" placeholder="3,00" /></td>
-      <td class="celula-checkbox"><input type="checkbox" class="input-aparelhado" /></td>
+      <td><input type="text" class="input-descricao" placeholder="Ex: Massaranduba 11x5 aparelhada" /></td>
+      <td><input type="number" class="input-medidas" min="0" step="0.1" placeholder="3,00" /></td>
+      <td><input type="number" class="input-valor-metro" min="0" step="0.01" placeholder="40,00" /></td>
       <td><button type="button" class="botao-remover" title="Remover item">✕</button></td>
     </tr>
   </template>

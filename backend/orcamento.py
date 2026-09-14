@@ -1,9 +1,8 @@
 from datetime import datetime
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
 
-from . import crud, schemas
+from . import schemas
 
 
 def _formatar_moeda(valor: float) -> str:
@@ -18,7 +17,7 @@ def _formatar_numero(valor: float, casas: int = 2) -> str:
     return texto
 
 
-def calcular_orcamento(db: Session, entrada: schemas.OrcamentoEntrada) -> schemas.OrcamentoSaida:
+def calcular_orcamento(entrada: schemas.OrcamentoEntrada) -> schemas.OrcamentoSaida:
     if not entrada.itens:
         raise HTTPException(status_code=400, detail="Adicione ao menos um item ao orçamento.")
 
@@ -26,24 +25,16 @@ def calcular_orcamento(db: Session, entrada: schemas.OrcamentoEntrada) -> schema
     subtotal_geral = 0.0
 
     for item in entrada.itens:
-        madeira = crud.get_madeira(db, item.madeira_id)
-        if madeira is None:
-            raise HTTPException(status_code=404, detail=f"Madeira id={item.madeira_id} não encontrada.")
-
-        preco_metro = madeira.preco_metro_aparelhado if item.aparelhado else madeira.preco_metro_normal
-        metros_totais = item.quantidade * item.comprimento_m
-        subtotal_item = metros_totais * preco_metro
+        metros_totais = item.quantidade * item.medidas_m
+        subtotal_item = metros_totais * item.valor_metro
         subtotal_geral += subtotal_item
 
         itens_saida.append(
             schemas.ItemOrcamentoSaida(
-                madeira_nome=madeira.nome,
-                largura_cm=madeira.largura_cm,
-                espessura_cm=madeira.espessura_cm,
-                aparelhado=item.aparelhado,
-                preco_metro=preco_metro,
+                descricao=item.descricao,
                 quantidade=item.quantidade,
-                comprimento_m=item.comprimento_m,
+                medidas_m=item.medidas_m,
+                valor_metro=item.valor_metro,
                 metros_totais=metros_totais,
                 subtotal=subtotal_item,
             )
@@ -86,17 +77,14 @@ def _montar_texto_whatsapp(cliente, itens, subtotal_geral, desconto_aplicado, de
     linhas.append("*Itens:*")
 
     for i, item in enumerate(itens, start=1):
-        acabamento = "aparelhada" if item.aparelhado else "normal"
-        bitola = f"{_formatar_numero(item.largura_cm, 0)}x{_formatar_numero(item.espessura_cm, 0)}"
         linhas.append(
-            f"{i}. {item.madeira_nome} {bitola} ({acabamento}) - {_formatar_numero(item.quantidade, 0)} peça(s) "
-            f"x {_formatar_numero(item.comprimento_m, 2)}m"
+            f"{i}. {item.descricao} - {_formatar_numero(item.quantidade, 0)} peça(s) x "
+            f"{_formatar_numero(item.medidas_m, 2)}m"
         )
         linhas.append(
-            f"   {_formatar_numero(item.metros_totais)} m x {_formatar_moeda(item.preco_metro)}/m = "
+            f"   {_formatar_numero(item.metros_totais)} m x {_formatar_moeda(item.valor_metro)}/m = "
             f"{_formatar_moeda(item.subtotal)}"
         )
-        linhas.append("")
 
     linhas.append("")
     linhas.append(f"Subtotal: {_formatar_moeda(subtotal_geral)}")

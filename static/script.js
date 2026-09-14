@@ -8,39 +8,12 @@ const resultado = document.getElementById("resultado");
 const resumoValores = document.getElementById("resumo-valores");
 const textoResultado = document.getElementById("texto-resultado");
 
-let madeiras = [];
-
-async function carregarMadeiras() {
-  const resp = await fetch("/api/madeiras?apenas_ativas=true");
-  madeiras = await resp.json();
-  if (madeiras.length === 0) {
-    alert("Nenhuma madeira cadastrada ainda. Acesse 'Cadastrar madeiras' para adicionar os tipos e preços.");
-  }
-}
-
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function rotuloMadeira(m) {
-  const bitola = `${m.largura_cm}x${m.espessura_cm}`;
-  return `${m.nome} ${bitola} - normal ${formatarMoeda(m.preco_metro_normal)}/m | aparelhada ${formatarMoeda(m.preco_metro_aparelhado)}/m`;
-}
-
-function preencherSelectMadeira(select) {
-  select.innerHTML = "";
-  madeiras.forEach((m) => {
-    const option = document.createElement("option");
-    option.value = m.id;
-    option.textContent = rotuloMadeira(m);
-    select.appendChild(option);
-  });
-}
-
 function adicionarLinha() {
   const clone = template.content.cloneNode(true);
-  const select = clone.querySelector(".input-madeira");
-  preencherSelectMadeira(select);
 
   clone.querySelector(".botao-remover").addEventListener("click", (e) => {
     e.target.closest("tr").remove();
@@ -57,19 +30,19 @@ function coletarItens() {
 
   linhas.forEach((linha) => {
     const quantidade = parseFloat(linha.querySelector(".input-qtd").value);
-    const madeiraId = parseInt(linha.querySelector(".input-madeira").value, 10);
-    const comprimento = parseFloat(linha.querySelector(".input-comprimento").value);
-    const aparelhado = linha.querySelector(".input-aparelhado").checked;
+    const descricao = linha.querySelector(".input-descricao").value.trim();
+    const medidas = parseFloat(linha.querySelector(".input-medidas").value);
+    const valorMetro = parseFloat(linha.querySelector(".input-valor-metro").value);
 
-    if (!quantidade || !madeiraId || !comprimento) {
+    if (!quantidade || !descricao || !medidas || !valorMetro) {
       return;
     }
 
     itens.push({
-      madeira_id: madeiraId,
       quantidade,
-      comprimento_m: comprimento,
-      aparelhado,
+      descricao,
+      medidas_m: medidas,
+      valor_metro: valorMetro,
     });
   });
 
@@ -80,7 +53,7 @@ async function calcularOrcamento() {
   const itens = coletarItens();
 
   if (itens.length === 0) {
-    alert("Preencha ao menos um item completo (quantidade, peça e comprimento).");
+    alert("Preencha ao menos um item completo (quantidade, descrição, medidas e valor do metro).");
     return;
   }
 
@@ -135,11 +108,7 @@ btnCopiar.addEventListener("click", async () => {
     setTimeout(() => (btnCopiar.textContent = "Copiar texto"), 1500);
   } catch (e) {
     textoResultado.select();
-    document.execCommand("copy");
   }
 });
 
-(async function init() {
-  await carregarMadeiras();
-  adicionarLinha();
-})();
+adicionarLinha();
