@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orçamento - Madeireira Lima</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Madeireira Lima</h1>
+    <p class="subtitulo">Gerador de Orçamentos</p>
+    <a class="link-admin" href="/admin">Cadastrar→</a>
+  </header>
+
+  <main>
+    <section class="cartao">
+      <h2>Dados do cliente</h2>
+      <div class="campo">
+        <label for="cliente">Nome do cliente (opcional)</label>
+        <input type="text" id="cliente" placeholder="Ex: João da Silva" />
+      </div>
+    </section>
+
+    <section class="cartao">
+      <h2>Itens do orçamento</h2>
+      <div class="tabela-scroll">
+        <table id="tabela-itens">
+          <thead>
+            <tr>
+              <th>Qtd (peças)</th>
+              <th>Peça</th>
+              <th>Comprimento (m)</th>
+              <th>Aparelhado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="corpo-tabela"></tbody>
+        </table>
+      </div>
+      <button type="button" id="btn-add-item" class="botao secundario">+ Adicionar item</button>
+    </section>
+
+    <section class="cartao">
+      <h2>Desconto</h2>
+      <div class="linha-campos">
+        <div class="campo">
+          <label for="desconto-percentual">Desconto (%)</label>
+          <input type="number" id="desconto-percentual" min="0" max="100" step="0.1" placeholder="0" />
+        </div>
+        <div class="campo">
+          <label for="desconto-valor">Desconto (R$)</label>
+          <input type="number" id="desconto-valor" min="0" step="0.01" placeholder="0,00" />
+        </div>
+      </div>
+      <p class="dica">Preencha apenas um dos dois campos de desconto.</p>
+    </section>
+
+    <div class="acoes">
+      <button type="button" id="btn-calcular" class="botao primario">Calcular orçamento</button>
+    </div>
+
+    <section class="cartao" id="resultado" hidden>
+      <h2>Resultado</h2>
+      <div id="resumo-valores"></div>
+      <div class="campo">
+        <label for="texto-resultado">Texto para enviar no WhatsApp</label>
+        <textarea id="texto-resultado" rows="16" readonly></textarea>
+      </div>
+      <div class="acoes">
+        <button type="button" id="btn-copiar" class="botao primario">Copiar texto</button>
+        <a id="btn-whatsapp" class="botao whatsapp" target="_blank" rel="noopener">Abrir no WhatsApp</a>
+      </div>
+    </section>
+  </main>
+
+  <template id="template-linha-item">
+    <tr>
+      <td><input type="number" class="input-qtd" min="1" step="1" value="1" /></td>
+      <td>
+        <select class="input-madeira"></select>
+      </td>
+      <td><input type="number" class="input-comprimento" min="0" step="0.01" placeholder="3,00" /></td>
+      <td class="celula-checkbox"><input type="checkbox" class="input-aparelhado" /></td>
+      <td><button type="button" class="botao-remover" title="Remover item">✕</button></td>
+    </tr>
+  </template>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
