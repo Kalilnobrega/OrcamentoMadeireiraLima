@@ -213,8 +213,8 @@ td input, td select {
 
 #texto-resultado {
   font-family: inherit;
-  white-space: pre-wrap;
-  word-break: break-word;
+  white-space: pre;
+  overflow-x: auto;
   line-height: 1.5;
 }
 
