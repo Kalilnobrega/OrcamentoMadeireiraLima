@@ -80,11 +80,11 @@ def _montar_texto_whatsapp(cliente, itens, subtotal_geral, desconto_aplicado, de
 
     for item in itens:
         linhas.append(
-            f"{_formatar_numero(item.quantidade, 0)} peça(s) - {item.descricao}"
+            f"{_formatar_numero(item.quantidade, 0)} UN {item.descricao}"
             f" - {_formatar_numero(item.medidas_m, 2)}m"
         )
         linhas.append(
-            f" Valor Unitário = {_formatar_moeda(item.valor_unitario)} - Subtotal = {_formatar_moeda(item.subtotal)}"
+            f"UN = {_formatar_moeda(item.valor_unitario)} | Subtotal = {_formatar_moeda(item.subtotal)}"
         )
         linhas.append("")
 
