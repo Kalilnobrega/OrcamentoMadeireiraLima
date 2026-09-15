@@ -25,6 +25,7 @@ def calcular_orcamento(entrada: schemas.OrcamentoEntrada) -> schemas.OrcamentoSa
     subtotal_geral = 0.0
 
     for item in entrada.itens:
+        valor_unitario = item.valor_metro * item.medidas_m
         metros_totais = item.quantidade * item.medidas_m
         subtotal_item = metros_totais * item.valor_metro
         subtotal_geral += subtotal_item
@@ -35,6 +36,7 @@ def calcular_orcamento(entrada: schemas.OrcamentoEntrada) -> schemas.OrcamentoSa
                 quantidade=item.quantidade,
                 medidas_m=item.medidas_m,
                 valor_metro=item.valor_metro,
+                valor_unitario=valor_unitario,
                 metros_totais=metros_totais,
                 subtotal=subtotal_item,
             )
@@ -76,13 +78,13 @@ def _montar_texto_whatsapp(cliente, itens, subtotal_geral, desconto_aplicado, de
     linhas.append("")
     linhas.append("*Itens:*")
 
-    for i, item in enumerate(itens, start=1):
+    for item in itens:
         linhas.append(
-            f"{i}. {item.descricao} - {_formatar_numero(item.quantidade, 0)} peça(s) x "
-            f"{_formatar_numero(item.medidas_m, 2)}m"
+            f"{_formatar_numero(item.quantidade, 0)} peça(s) - {item.descricao}"
+            f" - {_formatar_numero(item.medidas_m, 2)}m"
         )
         linhas.append(
-            f"= {_formatar_moeda(item.subtotal)}"
+            f" Valor Unitário = {_formatar_moeda(item.valor_unitario)} - Subtotal = {_formatar_moeda(item.subtotal)}"
         )
         linhas.append("")
 

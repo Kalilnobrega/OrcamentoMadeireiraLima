@@ -22,6 +22,7 @@ class ItemOrcamentoSaida(BaseModel):
     quantidade: float
     medidas_m: float
     valor_metro: float
+    valor_unitario: float
     metros_totais: float
     subtotal: float
 
