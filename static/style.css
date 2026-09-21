@@ -128,6 +128,11 @@ td input, td select {
   min-width: 90px;
 }
 
+td input:disabled {
+  background: #f0ebe2;
+  color: #999;
+}
+
 .celula-checkbox {
   text-align: center;
 }

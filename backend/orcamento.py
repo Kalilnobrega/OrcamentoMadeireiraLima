@@ -25,19 +25,25 @@ def calcular_orcamento(entrada: schemas.OrcamentoEntrada) -> schemas.OrcamentoSa
     subtotal_geral = 0.0
 
     for item in entrada.itens:
-        valor_unitario = item.valor_metro * item.medidas_m
-        metros_totais = item.quantidade * item.medidas_m
-        subtotal_item = metros_totais * item.valor_metro
+        if item.unidade == schemas.UnidadeMedida.METRO:
+            quantidade_total = item.quantidade * item.medida_m
+            valor_unitario = item.valor * item.medida_m
+        else:
+            quantidade_total = item.quantidade
+            valor_unitario = item.valor
+
+        subtotal_item = quantidade_total * item.valor
         subtotal_geral += subtotal_item
 
         itens_saida.append(
             schemas.ItemOrcamentoSaida(
                 descricao=item.descricao,
+                unidade=item.unidade,
                 quantidade=item.quantidade,
-                medidas_m=item.medidas_m,
-                valor_metro=item.valor_metro,
+                medida_m=item.medida_m,
+                valor=item.valor,
                 valor_unitario=valor_unitario,
-                metros_totais=metros_totais,
+                quantidade_total=quantidade_total,
                 subtotal=subtotal_item,
             )
         )
@@ -68,6 +74,26 @@ def calcular_orcamento(entrada: schemas.OrcamentoEntrada) -> schemas.OrcamentoSa
     )
 
 
+def _linha_item_whatsapp(item: schemas.ItemOrcamentoSaida) -> list[str]:
+    if item.unidade == schemas.UnidadeMedida.METRO:
+        return [
+            f"{_formatar_numero(item.quantidade, 0)} UN {item.descricao}"
+            f" - {_formatar_numero(item.medida_m, 2)}m",
+            f"UN = {_formatar_moeda(item.valor_unitario)} | Subtotal = {_formatar_moeda(item.subtotal)}",
+        ]
+
+    if item.unidade == schemas.UnidadeMedida.KG:
+        return [
+            f"{_formatar_numero(item.quantidade, 2)}kg {item.descricao}",
+            f"R$/kg = {_formatar_moeda(item.valor)} | Subtotal = {_formatar_moeda(item.subtotal)}",
+        ]
+
+    return [
+        f"{_formatar_numero(item.quantidade, 0)} UN {item.descricao}",
+        f"UN = {_formatar_moeda(item.valor)} | Subtotal = {_formatar_moeda(item.subtotal)}",
+    ]
+
+
 def _montar_texto_whatsapp(cliente, itens, subtotal_geral, desconto_aplicado, desconto_percentual, total_final) -> str:
     data_atual = datetime.now().strftime("%d/%m/%Y")
     linhas = ["*ORÇAMENTO - MADEIREIRA LIMA*", f"Data: {data_atual}"]
@@ -79,13 +105,7 @@ def _montar_texto_whatsapp(cliente, itens, subtotal_geral, desconto_aplicado, de
     linhas.append("*Itens:*")
 
     for item in itens:
-        linhas.append(
-            f"{_formatar_numero(item.quantidade, 0)} UN {item.descricao}"
-            f" - {_formatar_numero(item.medidas_m, 2)}m"
-        )
-        linhas.append(
-            f"UN = {_formatar_moeda(item.valor_unitario)} | Subtotal = {_formatar_moeda(item.subtotal)}"
-        )
+        linhas.extend(_linha_item_whatsapp(item))
         linhas.append("")
 
     linhas.append("")

@@ -1,13 +1,27 @@
+from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+
+class UnidadeMedida(str, Enum):
+    METRO = "m"
+    KG = "kg"
+    UNIDADE = "un"
 
 
 class ItemOrcamentoEntrada(BaseModel):
     descricao: str = Field(min_length=1)
+    unidade: UnidadeMedida
     quantidade: float = Field(gt=0)
-    medidas_m: float = Field(gt=0)
-    valor_metro: float = Field(gt=0)
+    medida_m: Optional[float] = Field(default=None, gt=0)
+    valor: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _validar_medida(self):
+        if self.unidade == UnidadeMedida.METRO and not self.medida_m:
+            raise ValueError("Informe o comprimento (m) para itens vendidos por metro.")
+        return self
 
 
 class OrcamentoEntrada(BaseModel):
@@ -19,11 +33,12 @@ class OrcamentoEntrada(BaseModel):
 
 class ItemOrcamentoSaida(BaseModel):
     descricao: str
+    unidade: UnidadeMedida
     quantidade: float
-    medidas_m: float
-    valor_metro: float
+    medida_m: Optional[float]
+    valor: float
     valor_unitario: float
-    metros_totais: float
+    quantidade_total: float
     subtotal: float
 
 

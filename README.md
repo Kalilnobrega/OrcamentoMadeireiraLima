@@ -4,7 +4,8 @@ Site simples para gerar orçamentos de madeira e enviar direto pelo WhatsApp.
 
 ## Funcionalidades
 
-- Orçamento com múltiplos itens, todos digitados na hora: quantidade, descrição, medidas (comprimento em metros) e valor do metro.
+- Orçamento com múltiplos itens, todos digitados na hora: quantidade, descrição, unidade de venda (metro, quilo ou unidade) e valor correspondente.
+- Suporta produtos vendidos por **metro** (ex: madeira, ripas — cobra por comprimento), por **quilo** (ex: prego, arame) ou por **unidade** (ex: telha, dobradiça).
 - Desconto por **percentual** ou por **valor fixo em R$** — o sistema sempre calcula e mostra os dois (o que você não digitar é calculado a partir do outro).
 - Geração de texto formatado, pronto para copiar ou abrir direto no WhatsApp.
 
@@ -56,8 +57,10 @@ http://127.0.0.1:8000
 ## Uso
 
 1. (Opcional) Informe o nome do cliente.
-2. Para cada item: quantidade de peças, descrição livre (ex: "Massaranduba 11x5 aparelhada"), medidas em metros (comprimento) e o valor do metro em R$.
-3. O valor da linha é calculado como: `quantidade × medidas (m) × valor do metro`.
-4. (Opcional) Informe um desconto em % ou em R$.
-5. Clique em "Calcular orçamento".
-6. Copie o texto gerado ou clique em "Abrir no WhatsApp" para enviar direto ao cliente.
+2. Para cada item: descrição livre (ex: "Massaranduba 11x5 aparelhada", "Prego 18x30", "Telha de barro") e escolha a unidade de venda:
+   - **Metro (m):** informe quantidade de peças, comprimento (m) e valor do metro. Subtotal = `quantidade × comprimento × valor`.
+   - **Quilo (kg):** informe o peso em kg e o valor do quilo. Subtotal = `peso × valor`.
+   - **Unidade (un):** informe a quantidade de peças e o valor da unidade. Subtotal = `quantidade × valor`.
+3. (Opcional) Informe um desconto em % ou em R$.
+4. Clique em "Calcular orçamento".
+5. Copie o texto gerado ou clique em "Abrir no WhatsApp" para enviar direto ao cliente.

@@ -8,18 +8,46 @@ const resultado = document.getElementById("resultado");
 const resumoValores = document.getElementById("resumo-valores");
 const textoResultado = document.getElementById("texto-resultado");
 
+const CONFIG_UNIDADE = {
+  m: { qtdPlaceholder: "1", qtdLabel: "Qtd (peças)", valorPlaceholder: "40,00", mostraMedida: true },
+  kg: { qtdPlaceholder: "5,00", qtdLabel: "Peso (kg)", valorPlaceholder: "12,00", mostraMedida: false },
+  un: { qtdPlaceholder: "10", qtdLabel: "Qtd (un)", valorPlaceholder: "8,50", mostraMedida: false },
+};
+
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function atualizarLinhaPorUnidade(linha) {
+  const unidade = linha.querySelector(".input-unidade").value;
+  const config = CONFIG_UNIDADE[unidade];
+  const inputMedida = linha.querySelector(".input-medida");
+  const inputQtd = linha.querySelector(".input-qtd");
+  const inputValor = linha.querySelector(".input-valor");
+
+  inputMedida.disabled = !config.mostraMedida;
+  inputMedida.placeholder = config.mostraMedida ? "3,00" : "não se aplica";
+  if (!config.mostraMedida) {
+    inputMedida.value = "";
+  }
+
+  inputQtd.placeholder = config.qtdPlaceholder;
+  inputQtd.title = config.qtdLabel;
+  inputValor.placeholder = config.valorPlaceholder;
+}
+
 function adicionarLinha() {
   const clone = template.content.cloneNode(true);
+  const linha = clone.querySelector("tr");
 
-  clone.querySelector(".botao-remover").addEventListener("click", (e) => {
+  linha.querySelector(".botao-remover").addEventListener("click", (e) => {
     e.target.closest("tr").remove();
   });
 
+  linha.querySelector(".input-unidade").addEventListener("change", () => atualizarLinhaPorUnidade(linha));
+
   corpoTabela.appendChild(clone);
+  atualizarLinhaPorUnidade(corpoTabela.lastElementChild);
 }
 
 btnAddItem.addEventListener("click", adicionarLinha);
@@ -31,18 +59,24 @@ function coletarItens() {
   linhas.forEach((linha) => {
     const quantidade = parseFloat(linha.querySelector(".input-qtd").value);
     const descricao = linha.querySelector(".input-descricao").value.trim();
-    const medidas = parseFloat(linha.querySelector(".input-medidas").value);
-    const valorMetro = parseFloat(linha.querySelector(".input-valor-metro").value);
+    const unidade = linha.querySelector(".input-unidade").value;
+    const medida = parseFloat(linha.querySelector(".input-medida").value);
+    const valor = parseFloat(linha.querySelector(".input-valor").value);
 
-    if (!quantidade || !descricao || !medidas || !valorMetro) {
+    if (!quantidade || !descricao || !valor) {
+      return;
+    }
+
+    if (unidade === "m" && !medida) {
       return;
     }
 
     itens.push({
       quantidade,
       descricao,
-      medidas_m: medidas,
-      valor_metro: valorMetro,
+      unidade,
+      medida_m: unidade === "m" ? medida : null,
+      valor,
     });
   });
 
@@ -53,7 +87,7 @@ async function calcularOrcamento() {
   const itens = coletarItens();
 
   if (itens.length === 0) {
-    alert("Preencha ao menos um item completo (quantidade, descrição, medidas e valor do metro).");
+    alert("Preencha ao menos um item completo (quantidade, descrição, unidade e valor; comprimento também para itens por metro).");
     return;
   }
 
