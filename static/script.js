@@ -7,6 +7,7 @@ const btnWhatsapp = document.getElementById("btn-whatsapp");
 const resultado = document.getElementById("resultado");
 const resumoValores = document.getElementById("resumo-valores");
 const textoResultado = document.getElementById("texto-resultado");
+const mensagemErro = document.getElementById("mensagem-erro");
 
 const CONFIG_UNIDADE = {
   m: { qtdPlaceholder: "1", qtdLabel: "Qtd (peças)", valorPlaceholder: "40,00", mostraMedida: true },
@@ -16,6 +17,16 @@ const CONFIG_UNIDADE = {
 
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function mostrarErro(texto) {
+  mensagemErro.textContent = texto;
+  mensagemErro.hidden = false;
+}
+
+function limparErro() {
+  mensagemErro.hidden = true;
+  mensagemErro.textContent = "";
 }
 
 function atualizarLinhaPorUnidade(linha) {
@@ -29,6 +40,7 @@ function atualizarLinhaPorUnidade(linha) {
   inputMedida.placeholder = config.mostraMedida ? "3,00" : "não se aplica";
   if (!config.mostraMedida) {
     inputMedida.value = "";
+    marcarCampo(inputMedida, true);
   }
 
   inputQtd.placeholder = config.qtdPlaceholder;
@@ -46,28 +58,62 @@ function adicionarLinha() {
 
   linha.querySelector(".input-unidade").addEventListener("change", () => atualizarLinhaPorUnidade(linha));
 
+  linha.querySelectorAll(".input-qtd, .input-descricao, .input-medida, .input-valor").forEach((input) => {
+    input.addEventListener("input", () => input.classList.remove("campo-invalido"));
+  });
+
   corpoTabela.appendChild(clone);
   atualizarLinhaPorUnidade(corpoTabela.lastElementChild);
 }
 
 btnAddItem.addEventListener("click", adicionarLinha);
 
+function marcarCampo(input, valido) {
+  input.classList.toggle("campo-invalido", !valido);
+}
+
 function coletarItens() {
   const linhas = corpoTabela.querySelectorAll("tr");
   const itens = [];
+  let primeiroCampoInvalido = null;
 
   linhas.forEach((linha) => {
-    const quantidade = parseFloat(linha.querySelector(".input-qtd").value);
-    const descricao = linha.querySelector(".input-descricao").value.trim();
+    const inputQtd = linha.querySelector(".input-qtd");
+    const inputDescricao = linha.querySelector(".input-descricao");
+    const inputMedida = linha.querySelector(".input-medida");
+    const inputValor = linha.querySelector(".input-valor");
     const unidade = linha.querySelector(".input-unidade").value;
-    const medida = parseFloat(linha.querySelector(".input-medida").value);
-    const valor = parseFloat(linha.querySelector(".input-valor").value);
 
-    if (!quantidade || !descricao || !valor) {
+    const quantidade = parseFloat(inputQtd.value);
+    const descricao = inputDescricao.value.trim();
+    const medida = parseFloat(inputMedida.value);
+    const valor = parseFloat(inputValor.value);
+
+    const linhaVazia = !inputQtd.value && !descricao && !inputMedida.value && !inputValor.value;
+    if (linhaVazia) {
+      marcarCampo(inputQtd, true);
+      marcarCampo(inputDescricao, true);
+      marcarCampo(inputMedida, true);
+      marcarCampo(inputValor, true);
       return;
     }
 
-    if (unidade === "m" && !medida) {
+    const medidaValida = unidade !== "m" || Boolean(medida);
+    marcarCampo(inputQtd, Boolean(quantidade));
+    marcarCampo(inputDescricao, Boolean(descricao));
+    marcarCampo(inputMedida, medidaValida);
+    marcarCampo(inputValor, Boolean(valor));
+
+    if (!quantidade || !descricao || !valor || !medidaValida) {
+      if (!primeiroCampoInvalido) {
+        primeiroCampoInvalido = !quantidade
+          ? inputQtd
+          : !descricao
+          ? inputDescricao
+          : !medidaValida
+          ? inputMedida
+          : inputValor;
+      }
       return;
     }
 
@@ -80,14 +126,21 @@ function coletarItens() {
     });
   });
 
-  return itens;
+  return { itens, primeiroCampoInvalido };
 }
 
 async function calcularOrcamento() {
-  const itens = coletarItens();
+  limparErro();
+  const { itens, primeiroCampoInvalido } = coletarItens();
 
   if (itens.length === 0) {
-    alert("Preencha ao menos um item completo (quantidade, descrição, unidade e valor; comprimento também para itens por metro).");
+    mostrarErro(
+      "Preencha ao menos um item completo: quantidade, descrição e valor (e comprimento em metros para itens vendidos por metro). Os números cinza nos campos são apenas exemplos, não valores preenchidos."
+    );
+    if (primeiroCampoInvalido) {
+      primeiroCampoInvalido.focus();
+      primeiroCampoInvalido.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
     return;
   }
 
@@ -102,15 +155,21 @@ async function calcularOrcamento() {
     itens,
   };
 
-  const resp = await fetch("/api/orcamento/calcular", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  let resp;
+  try {
+    resp = await fetch("/api/orcamento/calcular", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    mostrarErro("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.");
+    return;
+  }
 
   if (!resp.ok) {
     const erro = await resp.json().catch(() => ({ detail: "Erro ao calcular orçamento." }));
-    alert(erro.detail || "Erro ao calcular orçamento.");
+    mostrarErro(erro.detail || "Erro ao calcular orçamento.");
     return;
   }
 

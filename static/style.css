@@ -133,6 +133,11 @@ td input:disabled {
   color: #999;
 }
 
+.campo-invalido {
+  border-color: #b33 !important;
+  background: #fdeeee;
+}
+
 .celula-checkbox {
   text-align: center;
 }
